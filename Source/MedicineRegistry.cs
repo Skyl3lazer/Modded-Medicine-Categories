@@ -48,12 +48,10 @@ namespace ModdedMedicineCategories
         private static void Build()
         {
             var list = new List<Entry>();
-            foreach (var def in DefDatabase<ThingDef>.AllDefsListForReading)
+            foreach (var def in DefDatabase<ThingDef>.AllDefsListForReading.Where(d => d.IsMedicine))
             {
                 if (def?.statBases == null) continue;
-                var stat = def.statBases.FirstOrDefault(s => s?.stat == StatDefOf.MedicalPotency);
-                if (stat == null) continue;
-                list.Add(new Entry { Def = def, Potency = stat.value });
+                list.Add(new Entry { Def = def, Potency = def.statBases.FirstOrDefault(s => s.stat == StatDefOf.MedicalPotency)?.value ?? 0f });
             }
             list.Sort((a, b) => a.Potency.CompareTo(b.Potency));
             _all = list;
