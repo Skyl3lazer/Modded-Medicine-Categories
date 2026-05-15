@@ -80,5 +80,33 @@ namespace ModdedMedicineCategories
                 recipe.fixedIngredientFilter?.SetAllow(med.Def, allow);
             }
         }
+
+        public static bool IsAtDefault(RecipeDef recipe)
+        {
+            EnsureSnapshots();
+            if (!_originalAllowed.TryGetValue(recipe.defName, out var orig)) return true;
+            var ing = SurgeryCategoryRegistry.FindMedicineIngredient(recipe);
+            if (ing == null) return true;
+
+            foreach (var med in MedicineRegistry.All)
+            {
+                bool currentAllow = ing.filter.Allows(med.Def)
+                    && (recipe.fixedIngredientFilter == null || recipe.fixedIngredientFilter.Allows(med.Def));
+                bool origAllow = orig.Contains(med.Def.defName);
+                if (currentAllow != origAllow) return false;
+            }
+            return true;
+        }
+
+        public static ThingDef GetDefaultMinimumMedicine(RecipeDef recipe)
+        {
+            EnsureSnapshots();
+            if (!_originalAllowed.TryGetValue(recipe.defName, out var orig)) return null;
+            foreach (var med in MedicineRegistry.All)
+            {
+                if (orig.Contains(med.Def.defName)) return med.Def;
+            }
+            return null;
+        }
     }
 }

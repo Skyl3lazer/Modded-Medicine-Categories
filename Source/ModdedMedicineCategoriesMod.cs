@@ -26,6 +26,7 @@ namespace ModdedMedicineCategories
         private const float SurgeryLineHeight = 22f;
         private const float ExpandedPadding = 6f;
         private const float ExpandedIndent = 36f;
+        private const float ResetButtonWidth = 56f;
 
         public ModdedMedicineCategoriesMod(ModContentPack content) : base(content)
         {
@@ -184,29 +185,58 @@ namespace ModdedMedicineCategories
                 }
                 else
                 {
-                    Settings.recipeMinMedicine[recipe.defName] = selected.defName;
                     SurgeryFilterApplier.ApplyOverride(recipe, selected);
+                    if (SurgeryFilterApplier.IsAtDefault(recipe))
+                        Settings.recipeMinMedicine.Remove(recipe.defName);
+                    else
+                        Settings.recipeMinMedicine[recipe.defName] = selected.defName;
                 }
             }
             WriteSettings();
             SurgeryCategoryRegistry.Invalidate();
         }
 
-        private static void DrawExpanded(Rect rect, SurgeryCategoryRegistry.Category cat)
+        private void ResetSurgery(RecipeDef recipe)
+        {
+            Settings.recipeMinMedicine.Remove(recipe.defName);
+            SurgeryFilterApplier.RevertToOriginal(recipe);
+            WriteSettings();
+            SurgeryCategoryRegistry.Invalidate();
+        }
+
+        private void DrawExpanded(Rect rect, SurgeryCategoryRegistry.Category cat)
         {
             Widgets.DrawLightHighlight(rect);
 
             var prevAnchor = Text.Anchor;
             var prevFont = Text.Font;
-            Text.Anchor = TextAnchor.MiddleLeft;
             Text.Font = GameFont.Small;
 
             float y = rect.y + ExpandedPadding;
-            float lineWidth = rect.width - ExpandedIndent - ExpandedPadding;
             foreach (var recipe in cat.Recipes)
             {
-                var lineRect = new Rect(rect.x + ExpandedIndent, y, lineWidth, SurgeryLineHeight);
-                Widgets.Label(lineRect, "\u2022 " + recipe.LabelCap);
+                bool isOverridden = Settings.recipeMinMedicine.ContainsKey(recipe.defName);
+                float resetReserve = isOverridden ? ResetButtonWidth + IconGap : 0f;
+                float lineWidth = rect.width - ExpandedIndent - ExpandedPadding - resetReserve;
+
+                Text.Anchor = TextAnchor.MiddleLeft;
+                var labelRect = new Rect(rect.x + ExpandedIndent, y, lineWidth, SurgeryLineHeight);
+                Widgets.Label(labelRect, "\u2022 " + recipe.LabelCap);
+
+                if (isOverridden)
+                {
+                    var resetRect = new Rect(labelRect.xMax + IconGap, y, ResetButtonWidth, SurgeryLineHeight);
+                    if (Widgets.ButtonText(resetRect, "ModdedMedicineCategories.Reset".Translate()))
+                    {
+                        ResetSurgery(recipe);
+                    }
+                    var defaultMed = SurgeryFilterApplier.GetDefaultMinimumMedicine(recipe);
+                    string tip = defaultMed != null
+                        ? (string)"ModdedMedicineCategories.ResetSurgeryTooltipDefault".Translate(defaultMed.LabelCap)
+                        : (string)"ModdedMedicineCategories.ResetSurgeryTooltip".Translate();
+                    TooltipHandler.TipRegion(resetRect, (TipSignal)tip);
+                }
+
                 y += SurgeryLineHeight;
             }
 
