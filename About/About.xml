@@ -7,7 +7,8 @@
   <supportedVersions>
     <li>1.6</li>
   </supportedVersions>
-  <description>Customize the required medicine tier for surgeries. Reassign any surgery (vanilla or modded) to any medicine category you choose.</description>
+  <url>https://steamcommunity.com/sharedfiles/filedetails/?id=3726514540</url>
+  <description>Do you have modded medicines, or mods that require tiers of medicines you dont have in your game? Customize the required medicine tier for surgeries. Reassign any surgery (vanilla or modded) to any medicine category you choose.</description>
   <modVersion>1.0</modVersion>
   <modDependencies />
   <loadAfter>

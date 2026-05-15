@@ -35,6 +35,16 @@ namespace ModdedMedicineCategories
             return 0f;
         }
 
+        public static bool Contains(ThingDef def)
+        {
+            if (def == null) return false;
+            foreach (var e in All)
+            {
+                if (e.Def == def) return true;
+            }
+            return false;
+        }
+
         private static void Build()
         {
             var list = new List<Entry>();

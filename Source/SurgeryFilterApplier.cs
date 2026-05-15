@@ -40,15 +40,31 @@ namespace ModdedMedicineCategories
             foreach (var kvp in dict)
             {
                 var recipe = DefDatabase<RecipeDef>.GetNamedSilentFail(kvp.Key);
+                if (recipe == null)
+                {
+                    stale.Add(kvp.Key);
+                    continue;
+                }
                 var med = DefDatabase<ThingDef>.GetNamedSilentFail(kvp.Value);
-                if (recipe == null || med == null)
+                if (med == null || !MedicineRegistry.Contains(med))
+                {
+                    stale.Add(kvp.Key);
+                    continue;
+                }
+                if (SurgeryCategoryRegistry.FindMedicineIngredient(recipe) == null)
                 {
                     stale.Add(kvp.Key);
                     continue;
                 }
                 ApplyOverride(recipe, med);
             }
-            foreach (var key in stale) dict.Remove(key);
+
+            if (stale.Count > 0)
+            {
+                foreach (var key in stale) dict.Remove(key);
+                Log.Message($"[Modded Medicine Categories] Reset {stale.Count} surgery override(s) referencing missing or invalid defs to their defaults.");
+                LoadedModManager.GetMod<ModdedMedicineCategoriesMod>()?.WriteSettings();
+            }
         }
 
         public static void ApplyOverride(RecipeDef recipe, ThingDef minMedicine)
