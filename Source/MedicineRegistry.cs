@@ -26,6 +26,15 @@ namespace ModdedMedicineCategories
 
         public static void Invalidate() => _all = null;
 
+        public static float PotencyOf(ThingDef def)
+        {
+            foreach (var e in All)
+            {
+                if (e.Def == def) return e.Potency;
+            }
+            return 0f;
+        }
+
         private static void Build()
         {
             var list = new List<Entry>();

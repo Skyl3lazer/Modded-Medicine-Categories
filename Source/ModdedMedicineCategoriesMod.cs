@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -15,6 +17,9 @@ namespace ModdedMedicineCategories
         private const float RowHeight = 32f;
         private const float RowGap = 4f;
         private const float IconSize = 28f;
+        private const float IconGap = 2f;
+        private const int MaxIconsShown = 5;
+        private const float OverflowWidth = 28f;
         private const float DropdownWidth = 220f;
         private const float ColumnGap = 8f;
         private const float ToggleSize = 24f;
@@ -91,11 +96,22 @@ namespace ModdedMedicineCategories
                     ? (TipSignal)"ModdedMedicineCategories.HideSurgeries".Translate()
                     : (TipSignal)"ModdedMedicineCategories.ShowSurgeries".Translate());
 
+            var ddRect = new Rect(rect.xMax - DropdownWidth, rect.y + (rect.height - 28f) * 0.5f, DropdownWidth, 28f);
+
+            int iconCount = Math.Min(cat.MinimumMedicines.Count, MaxIconsShown);
+            bool hasOverflow = cat.MinimumMedicines.Count > MaxIconsShown;
+            float iconStripWidth = (iconCount * IconSize)
+                + (Math.Max(0, iconCount - 1) * IconGap)
+                + (hasOverflow ? OverflowWidth + IconGap : 0f);
+            var iconStripRect = new Rect(
+                ddRect.x - ColumnGap - iconStripWidth,
+                rect.y + (rect.height - IconSize) * 0.5f,
+                iconStripWidth,
+                IconSize);
+
             float labelStart = toggleRect.xMax + ColumnGap;
-            float labelWidth = rect.width - (labelStart - rect.x) - IconSize - DropdownWidth - (ColumnGap * 2f);
-            var labelRect = new Rect(labelStart, rect.y, labelWidth, rect.height);
-            var iconRect = new Rect(labelRect.xMax + ColumnGap, rect.y + (rect.height - IconSize) * 0.5f, IconSize, IconSize);
-            var ddRect = new Rect(iconRect.xMax + ColumnGap, rect.y + (rect.height - 28f) * 0.5f, DropdownWidth, 28f);
+            float labelEnd = (iconStripWidth > 0f ? iconStripRect.x : ddRect.x) - ColumnGap;
+            var labelRect = new Rect(labelStart, rect.y, Math.Max(0f, labelEnd - labelStart), rect.height);
 
             string labelText = $"{cat.Label}  ({cat.Recipes.Count})";
             var prevAnchor = Text.Anchor;
@@ -103,26 +119,77 @@ namespace ModdedMedicineCategories
             Widgets.Label(labelRect, labelText);
             Text.Anchor = prevAnchor;
 
-            if (cat.MinimumMedicine != null)
-                Widgets.ThingIcon(iconRect, cat.MinimumMedicine);
-
-            string current = cat.MinimumMedicine != null
-                ? cat.MinimumMedicine.LabelCap.ToString()
-                : "ModdedMedicineCategories.None".Translate().ToString();
-
-            if (Widgets.ButtonText(ddRect, current))
+            if (iconCount > 0)
             {
-                var options = new List<FloatMenuOption>
+                float ix = iconStripRect.x;
+                for (int i = 0; i < iconCount; i++)
                 {
-                    new FloatMenuOption("ModdedMedicineCategories.None".Translate(), () => { }),
-                };
-                foreach (var med in medicines)
-                {
-                    var capture = med;
-                    options.Add(new FloatMenuOption(capture.Def.LabelCap, () => { }, capture.Def));
+                    var def = cat.MinimumMedicines[i];
+                    var iconRect = new Rect(ix, iconStripRect.y, IconSize, IconSize);
+                    Widgets.ThingIcon(iconRect, def);
+                    TooltipHandler.TipRegion(iconRect, (TipSignal)def.LabelCap);
+                    ix += IconSize + IconGap;
                 }
-                Find.WindowStack.Add(new FloatMenu(options));
+                if (hasOverflow)
+                {
+                    var overflowRect = new Rect(ix, iconStripRect.y, OverflowWidth, IconSize);
+                    var prevA = Text.Anchor;
+                    Text.Anchor = TextAnchor.MiddleCenter;
+                    Widgets.Label(overflowRect, $"+{cat.MinimumMedicines.Count - MaxIconsShown}");
+                    Text.Anchor = prevA;
+                    var overflowList = cat.MinimumMedicines.Skip(MaxIconsShown).ToList();
+                    TooltipHandler.TipRegion(
+                        overflowRect,
+                        () => string.Join("\n", overflowList.Select(m => m.LabelCap.ToString())),
+                        cat.Key.GetHashCode() ^ 0x1234);
+                }
             }
+
+            if (cat.MinimumMedicine == null)
+            {
+                Widgets.ButtonText(ddRect, "ModdedMedicineCategories.None".Translate(), drawBackground: true, doMouseoverSound: false, active: false);
+                TooltipHandler.TipRegion(ddRect, (TipSignal)"ModdedMedicineCategories.NoMedicineDropdownTooltip".Translate());
+            }
+            else
+            {
+                if (Widgets.ButtonText(ddRect, cat.MinimumMedicine.LabelCap))
+                {
+                    var options = new List<FloatMenuOption>
+                    {
+                        new FloatMenuOption(
+                            "ModdedMedicineCategories.RestoreDefault".Translate(),
+                            () => OnMedicineSelected(cat, null)),
+                    };
+                    foreach (var med in medicines)
+                    {
+                        var capture = med;
+                        options.Add(new FloatMenuOption(
+                            capture.Def.LabelCap,
+                            () => OnMedicineSelected(cat, capture.Def),
+                            capture.Def));
+                    }
+                    Find.WindowStack.Add(new FloatMenu(options));
+                }
+            }
+        }
+
+        private void OnMedicineSelected(SurgeryCategoryRegistry.Category cat, ThingDef selected)
+        {
+            foreach (var recipe in cat.Recipes)
+            {
+                if (selected == null)
+                {
+                    Settings.recipeMinMedicine.Remove(recipe.defName);
+                    SurgeryFilterApplier.RevertToOriginal(recipe);
+                }
+                else
+                {
+                    Settings.recipeMinMedicine[recipe.defName] = selected.defName;
+                    SurgeryFilterApplier.ApplyOverride(recipe, selected);
+                }
+            }
+            WriteSettings();
+            SurgeryCategoryRegistry.Invalidate();
         }
 
         private static void DrawExpanded(Rect rect, SurgeryCategoryRegistry.Category cat)

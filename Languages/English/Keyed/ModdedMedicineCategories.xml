@@ -4,6 +4,8 @@
   <ModdedMedicineCategories.NoMedicine>No medicine required</ModdedMedicineCategories.NoMedicine>
   <ModdedMedicineCategories.RequiresMedicine>Requires {0} or better</ModdedMedicineCategories.RequiresMedicine>
   <ModdedMedicineCategories.None>None</ModdedMedicineCategories.None>
+  <ModdedMedicineCategories.RestoreDefault>Restore default</ModdedMedicineCategories.RestoreDefault>
+  <ModdedMedicineCategories.NoMedicineDropdownTooltip>These surgeries do not require any medicine, so a minimum tier cannot be set.</ModdedMedicineCategories.NoMedicineDropdownTooltip>
   <ModdedMedicineCategories.ShowSurgeries>Show affected surgeries</ModdedMedicineCategories.ShowSurgeries>
   <ModdedMedicineCategories.HideSurgeries>Hide affected surgeries</ModdedMedicineCategories.HideSurgeries>
 </LanguageData>

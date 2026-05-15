@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using RimWorld;
+using UnityEngine;
 using Verse;
 
 namespace ModdedMedicineCategories
@@ -12,6 +13,7 @@ namespace ModdedMedicineCategories
         {
             public string Key;
             public ThingDef MinimumMedicine;
+            public List<ThingDef> MinimumMedicines = new List<ThingDef>();
             public List<ThingDef> AllowedMedicines;
             public List<RecipeDef> Recipes;
 
@@ -52,11 +54,13 @@ namespace ModdedMedicineCategories
 
                 if (!byKey.TryGetValue(key, out var cat))
                 {
+                    var ties = ComputeTiedMin(allowed);
                     cat = new Category
                     {
                         Key = key,
                         AllowedMedicines = allowed,
-                        MinimumMedicine = allowed.Count > 0 ? allowed[0] : null,
+                        MinimumMedicines = ties,
+                        MinimumMedicine = ties.Count > 0 ? ties[0] : null,
                         Recipes = new List<RecipeDef>(),
                     };
                     byKey[key] = cat;
@@ -75,36 +79,49 @@ namespace ModdedMedicineCategories
                 cat.Recipes.Sort((a, b) => string.Compare(a.label ?? a.defName, b.label ?? b.defName, System.StringComparison.OrdinalIgnoreCase));
         }
 
-        private static List<ThingDef> AllowedMedicines(RecipeDef recipe)
+        internal static IngredientCount FindMedicineIngredient(RecipeDef recipe)
         {
-            var meds = new List<ThingDef>();
-            if (recipe.ingredients == null || recipe.ingredients.Count == 0)
-                return meds;
-
-            ThingFilter ingredientFilter = null;
+            if (recipe?.ingredients == null) return null;
             foreach (var ing in recipe.ingredients)
             {
                 if (ing?.filter == null) continue;
                 foreach (var med in MedicineRegistry.All)
                 {
                     if (ing.filter.Allows(med.Def))
-                    {
-                        ingredientFilter = ing.filter;
-                        break;
-                    }
+                        return ing;
                 }
-                if (ingredientFilter != null) break;
             }
-            if (ingredientFilter == null) return meds;
+            return null;
+        }
+
+        private static List<ThingDef> AllowedMedicines(RecipeDef recipe)
+        {
+            var meds = new List<ThingDef>();
+            var ing = FindMedicineIngredient(recipe);
+            if (ing == null) return meds;
 
             foreach (var med in MedicineRegistry.All)
             {
-                if (!ingredientFilter.Allows(med.Def)) continue;
+                if (!ing.filter.Allows(med.Def)) continue;
                 if (recipe.fixedIngredientFilter != null && !recipe.fixedIngredientFilter.Allows(med.Def)) continue;
                 if (recipe.defaultIngredientFilter != null && !recipe.defaultIngredientFilter.Allows(med.Def)) continue;
                 meds.Add(med.Def);
             }
             return meds;
+        }
+
+        private static List<ThingDef> ComputeTiedMin(List<ThingDef> sortedAscending)
+        {
+            var ties = new List<ThingDef>();
+            if (sortedAscending.Count == 0) return ties;
+            float min = MedicineRegistry.PotencyOf(sortedAscending[0]);
+            foreach (var def in sortedAscending)
+            {
+                float p = MedicineRegistry.PotencyOf(def);
+                if (Mathf.Approximately(p, min)) ties.Add(def);
+                else break;
+            }
+            return ties;
         }
 
         private static string BuildKey(List<ThingDef> meds)
