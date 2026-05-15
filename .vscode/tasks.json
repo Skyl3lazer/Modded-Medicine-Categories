@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build ModdedMedicineCategories (Release)",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "ModdedMedicineCategories.sln",
+        "-c",
+        "Release",
+        "-nologo"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Build ModdedMedicineCategories (Debug)",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "ModdedMedicineCategories.sln",
+        "-c",
+        "Debug",
+        "-nologo"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}
