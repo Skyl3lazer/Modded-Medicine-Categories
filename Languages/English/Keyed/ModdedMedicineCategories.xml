@@ -4,5 +4,6 @@
   <ModdedMedicineCategories.NoMedicine>No medicine required</ModdedMedicineCategories.NoMedicine>
   <ModdedMedicineCategories.RequiresMedicine>Requires {0} or better</ModdedMedicineCategories.RequiresMedicine>
   <ModdedMedicineCategories.None>None</ModdedMedicineCategories.None>
-  <ModdedMedicineCategories.AndMore>...and {0} more</ModdedMedicineCategories.AndMore>
+  <ModdedMedicineCategories.ShowSurgeries>Show affected surgeries</ModdedMedicineCategories.ShowSurgeries>
+  <ModdedMedicineCategories.HideSurgeries>Hide affected surgeries</ModdedMedicineCategories.HideSurgeries>
 </LanguageData>
