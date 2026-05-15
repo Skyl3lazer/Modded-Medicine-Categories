@@ -1,3 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
+  <ModdedMedicineCategories.SettingsCategory>Modded Medicine Categories</ModdedMedicineCategories.SettingsCategory>
+  <ModdedMedicineCategories.NoMedicine>No medicine required</ModdedMedicineCategories.NoMedicine>
+  <ModdedMedicineCategories.RequiresMedicine>Requires {0} or better</ModdedMedicineCategories.RequiresMedicine>
+  <ModdedMedicineCategories.None>None</ModdedMedicineCategories.None>
+  <ModdedMedicineCategories.AndMore>...and {0} more</ModdedMedicineCategories.AndMore>
 </LanguageData>
