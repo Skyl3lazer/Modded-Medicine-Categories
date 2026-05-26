@@ -9,7 +9,7 @@
   </supportedVersions>
   <url>https://steamcommunity.com/sharedfiles/filedetails/?id=3726514540</url>
   <description>Do you have modded medicines, or mods that require tiers of medicines you dont have in your game? Customize the required medicine tier for surgeries. Reassign any surgery (vanilla or modded) to any medicine category you choose.</description>
-  <modVersion>1.0</modVersion>
+  <modVersion>1.1</modVersion>
   <modDependencies />
   <loadAfter>
     <li>Ludeon.RimWorld</li>
