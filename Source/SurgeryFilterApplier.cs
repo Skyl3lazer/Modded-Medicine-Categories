@@ -24,6 +24,7 @@ namespace ModdedMedicineCategories
                 {
                     if (!ing.filter.Allows(med.Def)) continue;
                     if (recipe.fixedIngredientFilter != null && !recipe.fixedIngredientFilter.Allows(med.Def)) continue;
+                    if (recipe.defaultIngredientFilter != null && !recipe.defaultIngredientFilter.Allows(med.Def)) continue;
                     orig.Add(med.Def.defName);
                 }
                 _originalAllowed[recipe.defName] = orig;
@@ -79,6 +80,7 @@ namespace ModdedMedicineCategories
                 bool allow = med.Potency >= threshold;
                 ing.filter.SetAllow(med.Def, allow);
                 recipe.fixedIngredientFilter?.SetAllow(med.Def, allow);
+                recipe.defaultIngredientFilter?.SetAllow(med.Def, allow);
             }
         }
 
@@ -94,6 +96,7 @@ namespace ModdedMedicineCategories
                 bool allow = orig.Contains(med.Def.defName);
                 ing.filter.SetAllow(med.Def, allow);
                 recipe.fixedIngredientFilter?.SetAllow(med.Def, allow);
+                recipe.defaultIngredientFilter?.SetAllow(med.Def, allow);
             }
         }
 
@@ -107,7 +110,8 @@ namespace ModdedMedicineCategories
             foreach (var med in MedicineRegistry.All)
             {
                 bool currentAllow = ing.filter.Allows(med.Def)
-                    && (recipe.fixedIngredientFilter == null || recipe.fixedIngredientFilter.Allows(med.Def));
+                    && (recipe.fixedIngredientFilter == null || recipe.fixedIngredientFilter.Allows(med.Def))
+                    && (recipe.defaultIngredientFilter == null || recipe.defaultIngredientFilter.Allows(med.Def));
                 bool origAllow = orig.Contains(med.Def.defName);
                 if (currentAllow != origAllow) return false;
             }
