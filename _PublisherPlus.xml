@@ -13,5 +13,8 @@
     <exclude>ModdedMedicineCategories.sln</exclude>
     <exclude>Source</exclude>
     <exclude>docs</exclude>
+    <exclude>Assets.zip</exclude>
+    <exclude>1.6\Assets.zip</exclude>
+    <exclude>1.7\Assets.zip</exclude>
   </Excluded>
 </Configuration>
